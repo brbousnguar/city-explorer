@@ -1,4 +1,8 @@
 import wikipedia
+import requests
+from dotenv import load_dotenv
+import os
+
 
 def get_summary(city):
     try:
@@ -36,6 +40,33 @@ def get_summary(city):
     except Exception as e:
         print("❌ An unexpected error occurred:", e)
 
+
+def get_weather(city):
+    load_dotenv()
+    api_key = os.getenv("OPENWEATHER_API_KEY")
+    if not api_key:
+        print("❌ API key not found in .env file")
+        return
+
+    url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric"
+
+    try:
+        response = requests.get(url)
+        data = response.json()
+
+        if data.get("cod") != 200:
+            print("❌ Weather data error:", data.get("message", "Unknown error"))
+            return
+
+        weather = data["weather"][0]["description"].capitalize()
+        temp = data["main"]["temp"]
+        print(f"🌤️ Weather in {city}: {weather}, {temp}°C")
+
+    except Exception as e:
+        print("❌ Failed to fetch weather:", e)
+
+
 if __name__ == "__main__":
     city = input("🏙️ Enter a city name: ")
     get_summary(city)
+    get_weather(city)
